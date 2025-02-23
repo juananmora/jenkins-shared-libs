@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: newman
+    image: postman/newman:alpine
+    resources:
+      requests: { cpu: "500m", memory: "1Gi" }
+      limits: { cpu: "1", memory: "2Gi" }
+    volumeMounts:
+      - name: shared-data
+        mountPath: /etc/newman
+  volumes:
+    - name: shared-data
+      emptyDir: {}
+  nodeSelector:
+    kubernetes.azure.com/agentpool: secondary

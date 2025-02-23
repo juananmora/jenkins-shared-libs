@@ -1,0 +1,33 @@
+@Library('jenkins-shared-libs') _
+
+pipelineInit(
+  repoUrl: 'https://github.com/ctti-dev/3632.00-mat-api-tests',
+  podTemplate: 'newman-pod.yaml',
+  nodeLabel: 'newman',
+  requiredParams: ['API_ENV', 'COLLECTION_ID'],
+  extraParams: [
+    string(name: 'API_URL', defaultValue: 'https://qualitat.solucions.gencat.cat'),
+    string(name: 'ENVIRONMENT_ID', defaultValue: 'prod-environment')
+  ]
+)
+
+stages {
+  stage('Descargar Colección') {
+    script {
+      sh "postman collection get ${params.COLLECTION_ID} --output postman-collection.json"
+    }
+  }
+  
+  stage('Ejecutar Pruebas API') {
+    testRunners.runNewmanTests(
+      collection: 'postman-collection.json',
+      environment: params.ENVIRONMENT_ID,
+      apiUrl: params.API_URL
+    )
+  }
+  
+  stage('Reportes') {
+    junit 'newman-results.xml'
+    jiraIntegration.uploadResults('newman-results.xml')
+  }
+}

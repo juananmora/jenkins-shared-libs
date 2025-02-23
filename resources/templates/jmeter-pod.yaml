@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: jmeter
+    image: matpreacrwe1001.azurecr.io/mat-jmeter:junit-converter
+    resources:
+      requests: { cpu: 1, memory: 2Gi }
+      limits: { cpu: 2, memory: 4Gi }
+  nodeSelector:
+    kubernetes.azure.com/agentpool: secondary

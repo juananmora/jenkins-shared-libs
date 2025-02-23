@@ -1,0 +1,26 @@
+@Library('jenkins-shared-libs') _
+
+pipelineInit(
+  repoUrl: 'https://github.com/ctti-dev/3632.00-mat-performance-tests',
+  podTemplate: 'jmeter-pod.yaml',
+  nodeLabel: 'jmeter',
+  requiredParams: ['REPO_URL', 'URL_APP'],
+  extraParams: [
+    string(name: 'THREAD_COUNT', defaultValue: '20'),
+    string(name: 'TEST_DURATION', defaultValue: '10')
+  ]
+)
+
+stages {
+  stage('Ejecución JMeter') {
+    testRunners.runJMeter(
+      testPlan: 'TestPlanCTTI.jmx',
+      threads: params.THREAD_COUNT
+    )
+  }
+  
+  stage('Resultados') {
+    jiraIntegration.uploadResults('log.jtl')
+    publishHTML([reportDir: 'html.d', reportFiles: 'index.html'])
+  }
+}

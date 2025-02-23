@@ -1,0 +1,26 @@
+@Library('jenkins-shared-libs') _
+
+pipelineInit(
+  repoUrl: 'https://github.com/ctti-dev/3632.00-mat-functional-tests',
+  podTemplate: 'selenium-pod.yaml',
+  nodeLabel: 'selenium',
+  requiredParams: ['BASE_URL', 'BROWSER'],
+  extraParams: [
+    choice(name: 'BROWSER', choices: ['chrome', 'firefox'])
+  ]
+)
+
+stages {
+  stage('Ejecutar Pruebas UI') {
+    testRunners.runSeleniumTests(
+      pomFile: 'pom.xml',
+      baseUrl: params.BASE_URL,
+      browser: params.BROWSER
+    )
+  }
+  
+  stage('Resultados') {
+    junit 'target/surefire-reports/*.xml'
+    publishHTML([reportDir: 'target/surefire-reports/html', reportFiles: 'index.html'])
+  }
+}
